@@ -186,18 +186,17 @@
 <body>
     <div class="card">
         <h1>🔐 Connection String Encryptor</h1>
-        <p class="subtitle">Mã hóa / giải mã giá trị cho <code>appsettings.json</code> — chạy hoàn toàn offline trên máy
-            bạn</p>
+        <p class="subtitle">Encrypt / decrypt values for <code>appsettings.json</code> — runs entirely offline on your machine</p>
 
-        <label>Encryption:Key <span class="badge">từ appsettings.json</span></label>
+        <label>Encryption:Key <span class="badge">from appsettings.json</span></label>
         <div style="display:flex; gap: 8px;">
-            <input type="password" id="encKey" placeholder="Nhập key của bạn vào đây..." style="flex: 1;" />
-            <button class="btn-gen" onclick="generateKey()" title="Tạo ngẫu nhiên 32 bytes (Base64)">🎲 Gen Key</button>
-            <button class="btn-gen" onclick="toggleKey()" id="btnToggleKey" title="Hiện/Ẩn Key" style="padding: 10px;">👁️</button>
+            <input type="password" id="encKey" placeholder="Enter your key here..." style="flex: 1;" />
+            <button class="btn-gen" onclick="generateKey()" title="Generate random 32 bytes (Base64)">🎲 Gen Key</button>
+            <button class="btn-gen" onclick="toggleKey()" id="btnToggleKey" title="Toggle visibility" style="padding: 10px;">👁️</button>
         </div>
 
-        <label>Giá trị cần mã hóa / giải mã</label>
-        <textarea id="inputVal" placeholder="Nhập giá trị cần mã hóa..."></textarea>
+        <label>Value to encrypt / decrypt</label>
+        <textarea id="inputVal" placeholder="Enter value to encrypt / decrypt..."></textarea>
 
         <div class="row">
             <button class="btn-enc" onclick="doEncrypt()">🔒 Encrypt</button>
@@ -206,13 +205,13 @@
 
         <div class="result-box">
             <div class="result-label">
-                <span>Kết quả</span>
+                <span>Result</span>
                 <button class="btn-copy" onclick="copyResult()">Copy</button>
             </div>
             <div class="result" id="result">—</div>
         </div>
 
-        <p class="note">⚠️ Tất cả xử lý diễn ra <strong>trong browser của bạn</strong>, không gửi dữ liệu ra ngoài.</p>
+        <p class="note">⚠️ All processing happens <strong>in your browser</strong>, no data is sent externally.</p>
     </div>
 
     <script>
@@ -230,29 +229,29 @@
             const key = document.getElementById('encKey').value.trim();
             const val = document.getElementById('inputVal').value;
             const out = document.getElementById('result');
-            if (!key || !val) { setResult('❌ Nhập Encryption Key và giá trị cần mã hóa', 'error'); return; }
+            if (!key || !val) { setResult('❌ Enter Encryption Key and value to encrypt', 'error'); return; }
             try {
                 const { cryptoKey, iv } = await deriveKeyIV(key);
                 const data = new TextEncoder().encode(val);
                 const encrypted = await crypto.subtle.encrypt({ name: 'AES-CBC', iv }, cryptoKey, data);
                 const b64 = btoa(String.fromCharCode(...new Uint8Array(encrypted)));
                 setResult('ENC:' + b64, '');
-            } catch (e) { setResult('❌ Lỗi: ' + e.message, 'error'); }
+            } catch (e) { setResult('❌ Error: ' + e.message, 'error'); }
         }
 
         async function doDecrypt() {
             const key = document.getElementById('encKey').value.trim();
             const val = document.getElementById('inputVal').value.trim();
             const out = document.getElementById('result');
-            if (!key || !val) { setResult('❌ Nhập Encryption Key và chuỗi ENC:...', 'error'); return; }
-            if (!val.startsWith('ENC:')) { setResult('ℹ️ Giá trị không bị mã hóa (không có tiền tố ENC:)', 'info'); return; }
+            if (!key || !val) { setResult('❌ Enter Encryption Key and ENC:... string', 'error'); return; }
+            if (!val.startsWith('ENC:')) { setResult('ℹ️ Value is not encrypted (missing ENC: prefix)', 'info'); return; }
             try {
                 const { cryptoKey, iv } = await deriveKeyIV(key);
                 const binaryStr = atob(val.substring(4));
                 const bytes = Uint8Array.from(binaryStr, c => c.charCodeAt(0));
                 const decrypted = await crypto.subtle.decrypt({ name: 'AES-CBC', iv }, cryptoKey, bytes);
                 setResult(new TextDecoder().decode(decrypted), '');
-            } catch (e) { setResult('❌ Sai Key hoặc dữ liệu bị hỏng: ' + e.message, 'error'); }
+            } catch (e) { setResult('❌ Invalid Key or corrupted data: ' + e.message, 'error'); }
         }
 
         function setResult(text, cls) {
