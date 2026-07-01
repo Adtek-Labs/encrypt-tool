@@ -164,6 +164,22 @@
             padding: 8px 12px;
             border-radius: 4px;
         }
+
+        .btn-gen {
+            flex: 0 0 auto;
+            padding: 10px 12px;
+            font-size: 0.85rem;
+            background: #45475a;
+            color: #cdd6f4;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .btn-gen:hover {
+            background: #585b70;
+        }
     </style>
 </head>
 
@@ -174,7 +190,11 @@
             bạn</p>
 
         <label>Encryption:Key <span class="badge">từ appsettings.json</span></label>
-        <input type="password" id="encKey" placeholder="Nhập key của bạn vào đây..." />
+        <div style="display:flex; gap: 8px;">
+            <input type="password" id="encKey" placeholder="Nhập key của bạn vào đây..." style="flex: 1;" />
+            <button class="btn-gen" onclick="generateKey()" title="Tạo ngẫu nhiên 32 bytes (Base64)">🎲 Gen Key</button>
+            <button class="btn-gen" onclick="toggleKey()" id="btnToggleKey" title="Hiện/Ẩn Key" style="padding: 10px;">👁️</button>
+        </div>
 
         <label>Giá trị cần mã hóa / giải mã</label>
         <textarea id="inputVal" placeholder="Nhập giá trị cần mã hóa..."></textarea>
@@ -248,6 +268,28 @@
                 btn.textContent = '✓ Copied!';
                 setTimeout(() => btn.textContent = 'Copy', 1500);
             });
+        }
+
+        function generateKey() {
+            const array = new Uint8Array(32);
+            crypto.getRandomValues(array);
+            const b64 = btoa(String.fromCharCode(...array));
+            const input = document.getElementById('encKey');
+            input.value = b64;
+            input.type = 'text';
+            document.getElementById('btnToggleKey').textContent = '🙈';
+        }
+
+        function toggleKey() {
+            const input = document.getElementById('encKey');
+            const btn = document.getElementById('btnToggleKey');
+            if (input.type === 'password') {
+                input.type = 'text';
+                btn.textContent = '🙈';
+            } else {
+                input.type = 'password';
+                btn.textContent = '👁️';
+            }
         }
     </script>
 </body>
